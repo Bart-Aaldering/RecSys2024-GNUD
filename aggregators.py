@@ -167,16 +167,16 @@ class RoutingLayer():
     def rout(self, self_vectors, neighbor_vectors, max_iter):
 
         if hasattr(self, 'w1'):
-            self_z = tf.nn.relu(tf.matmul(tf.reshape(self.drop_out(self_vectors), [-1, self.inp_caps*self.cap_sz]), self.w1) + self.b1)
-            neighbor_z = tf.nn.relu(tf.matmul(tf.reshape(self.drop_out(neighbor_vectors), [-1, self.inp_caps*self.cap_sz]), self.w1) + self.b1)
+            self_z = tf.nn.relu(tf.matmul(tf.reshape(self_vectors, [-1, self.inp_caps*self.cap_sz]), self.w1) + self.b1)
+            neighbor_z = tf.nn.relu(tf.matmul(tf.reshape(neighbor_vectors, [-1, self.inp_caps*self.cap_sz]), self.w1) + self.b1)
         elif hasattr(self, 'w2'):
             self_z = tf.nn.relu(
-                tf.matmul(tf.reshape(self.drop_out(self_vectors), [-1, self.inp_caps * self.cap_sz]), self.w2) + self.b2)
-            neighbor_z = tf.nn.relu(tf.matmul(tf.reshape(self.drop_out(neighbor_vectors), [-1, self.inp_caps * self.cap_sz]),
+                tf.matmul(tf.reshape(self_vectors, [-1, self.inp_caps * self.cap_sz]), self.w2) + self.b2)
+            neighbor_z = tf.nn.relu(tf.matmul(tf.reshape(neighbor_vectors, [-1, self.inp_caps * self.cap_sz]),
                                               self.w2) + self.b2)
-        else:
-            self_z = tf.reshape(self.drop_out(tf.nn.relu(self_vectors)), [-1, self.d])
-            neighbor_z = tf.reshape(self.drop_out(tf.nn.relu(neighbor_vectors)), [-1, self.d])
+        else:  # 第一层不激活
+            self_z = tf.reshape(self_vectors, [-1, self.d])
+            neighbor_z = tf.reshape(neighbor_vectors, [-1, self.d])
         self_size, neighbor_size = self_vectors.shape, neighbor_vectors.shape
         self_n, neighbor_n = self_size[0] * self_size[1], neighbor_size[0]*neighbor_size[1]
         d, k, delta_d = self.d, self.k, self.d // self.k

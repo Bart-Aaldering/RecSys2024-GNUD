@@ -155,7 +155,7 @@ class Model(object):
             self.item_bias = tf.get_variable(shape=[self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
 
         news_hop_vectors = tf.reshape(self.convolution(news[0]), [-1, self.cnn_out_size])
-        news_hop_vectors = tf.matmul(news_hop_vectors, self.item_weights) + self.item_bias
+        news_hop_vectors = tf.nn.relu(tf.matmul(news_hop_vectors, self.item_weights) + self.item_bias)
 
         news_vectors.append(tf.reshape(news_hop_vectors, [self.batch_size,-1, self.dim]))
         news_neighbors = tf.nn.embedding_lookup(self.news_user, news[0][:, 0])
@@ -163,7 +163,7 @@ class Model(object):
         print("news---hop----0", news, news_vectors)
 
         user_hop_vectors = tf.reshape(tf.nn.embedding_lookup(self.user_emb_matrix, user[0]), [-1, self.user_dim])
-        user_hop_vectors = tf.matmul(user_hop_vectors,self.user_weights) + self.user_bias
+        user_hop_vectors = tf.nn.relu(tf.matmul(user_hop_vectors,self.user_weights) + self.user_bias)
         user_vectors.append(tf.reshape(user_hop_vectors,[self.batch_size, -1, self.dim]))
         user_neighbors = tf.nn.embedding_lookup(self.user_news, user[0][:, 0])
         user.append(user_neighbors)
@@ -171,7 +171,7 @@ class Model(object):
 
         if self.n_iter >= 1:
             news_hop_vectors = tf.reshape(tf.nn.embedding_lookup(self.user_emb_matrix, news[1][:, :u]),[-1, self.user_dim])
-            news_hop_vectors = tf.matmul(news_hop_vectors, self.user_weights) + self.user_bias
+            news_hop_vectors = tf.nn.relu(tf.matmul(news_hop_vectors, self.user_weights) + self.user_bias)
             news_hop_vectors = tf.reshape(news_hop_vectors, [self.batch_size, -1, self.dim])
             news_neighbors = tf.reshape(tf.gather(self.user_news, news[1][:, :u]), [self.batch_size, -1])
             news_vectors.append(news_hop_vectors)
@@ -179,7 +179,7 @@ class Model(object):
             print("news---hop----1", news, news_vectors)
 
             user_hop_vectors = tf.reshape(self.convolution(user[1]), [-1, self.cnn_out_size])
-            user_hop_vectors = tf.matmul(user_hop_vectors, self.item_weights) + self.item_bias
+            user_hop_vectors = tf.nn.relu(tf.matmul(user_hop_vectors, self.item_weights) + self.item_bias)
             user_hop_vectors = tf.reshape(user_hop_vectors, [self.batch_size, -1, self.dim])
             user_neighbors = tf.reshape(tf.gather(self.news_user, user[1][:, :n]), [self.batch_size, -1])
             user_vectors.append(user_hop_vectors)
@@ -188,7 +188,7 @@ class Model(object):
 
         if self.n_iter >= 2:
             news_hop_vectors = tf.reshape(self.convolution(news[2]), [-1, self.cnn_out_size])
-            news_hop_vectors = tf.matmul(news_hop_vectors, self.item_weights) + self.item_bias
+            news_hop_vectors = tf.nn.relu(tf.matmul(news_hop_vectors, self.item_weights) + self.item_bias)
             news_hop_vectors = tf.reshape(news_hop_vectors, [self.batch_size, -1, self.dim])
             news_neighbors = tf.gather(self.news_user, news[2])
             news_neighbors = tf.reshape(news_neighbors, [self.batch_size, -1])
@@ -199,7 +199,7 @@ class Model(object):
 
             user_hop_vectors = tf.reshape(tf.nn.embedding_lookup(self.user_emb_matrix, user[2]),
                        [-1, self.user_dim])
-            user_hop_vectors = tf.matmul(user_hop_vectors, self.user_weights) + self.user_bias
+            user_hop_vectors = tf.nn.relu(tf.matmul(user_hop_vectors, self.user_weights) + self.user_bias)
             user_hop_vectors = tf.reshape(user_hop_vectors, [self.batch_size, -1, self.dim])
             user_neighbors = tf.reshape(tf.gather(self.user_news, user[2]), [self.batch_size, -1])
             user_vectors.append(user_hop_vectors)
@@ -213,13 +213,13 @@ class Model(object):
                 if j == 0:
                     news_hop_vectors = tf.reshape(tf.nn.embedding_lookup(self.user_emb_matrix, news[3][:, :u])
                                , [-1, self.user_dim])
-                    news_hop_vectors = tf.matmul(news_hop_vectors, self.user_weights) + self.user_bias
+                    news_hop_vectors = tf.nn.relu(tf.matmul(news_hop_vectors, self.user_weights) + self.user_bias)
                     news_hop_vectors = tf.reshape(news_hop_vectors, [self.batch_size, -1, self.dim])
                     j += u
                 else:
                     t = tf.reshape(tf.nn.embedding_lookup(self.user_emb_matrix, news[3][:, j:j + u]),
                                [-1, self.user_dim])
-                    t = tf.matmul(t, self.user_weights) + self.user_bias
+                    t = tf.nn.relu(tf.matmul(t, self.user_weights) + self.user_bias)
                     t = tf.reshape(t, [self.batch_size, -1, self.dim])
                     news_hop_vectors = tf.concat([news_hop_vectors, t], axis=1)
                     j += u
@@ -287,11 +287,15 @@ class Model(object):
                 print("news--hop", hop, news_vectors[hop], tf.reshape(news_vectors[hop+1], news_shape))
                 print("user--hop", hop, user_vectors[hop], tf.reshape(user_vectors[hop + 1], user_shape))
 
+                news_vectors[hop] = conv.drop_out(news_vectors[hop])
+                news_vectors[hop+1] = conv.drop_out(news_vectors[hop+1])
                 news_vector = conv.rout(self_vectors=news_vectors[hop],
-                                neighbor_vectors=tf.reshape(news_vectors[hop+1], news_shape), max_iter=self.routit)
-
+                                neighbor_vectors=tf.reshape(news_vectors[hop + 1], news_shape), max_iter=self.routit)
+                user_vectors[hop] = conv.drop_out(user_vectors[hop])
+                user_vectors[hop+1] = conv.drop_out(user_vectors[hop+1])
                 user_vector = conv.rout(self_vectors=user_vectors[hop],
                                 neighbor_vectors=tf.reshape(user_vectors[hop + 1], user_shape), max_iter=self.routit)
+
 
                 news_vectors_next_iter.append(news_vector)
                 user_vectors_next_iter.append(user_vector)
