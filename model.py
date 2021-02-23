@@ -79,6 +79,8 @@ class Model(object):
         newsvec, uservec = self.get_neighbors(self.news_indices, self.user_indices)
 
         self.news_embeddings, self.user_embeddings, self.aggregators = self.aggregate(newsvec, uservec)
+        # self.user_embeddings = tf.nn.l2_normalize(self.user_embeddings, axis=-1)
+        # self.news_embeddings = tf.nn.l2_normalize(self.news_embeddings, axis=-1)
         self.scores = tf.squeeze(self.simple_dot_net(self.user_embeddings, self.news_embeddings))
         self.scores_normalized = tf.sigmoid(self.scores)
         self.predict_label = tf.cast(self.scores > 0.5, tf.int32)
@@ -285,13 +287,11 @@ class Model(object):
                 print("news--hop", hop, news_vectors[hop], tf.reshape(news_vectors[hop+1], news_shape))
                 print("user--hop", hop, user_vectors[hop], tf.reshape(user_vectors[hop + 1], user_shape))
 
-                
                 news_vector = conv.rout(self_vectors=news_vectors[hop],
                                 neighbor_vectors=tf.reshape(news_vectors[hop+1], news_shape), max_iter=self.routit)
-                
+
                 user_vector = conv.rout(self_vectors=user_vectors[hop],
                                 neighbor_vectors=tf.reshape(user_vectors[hop + 1], user_shape), max_iter=self.routit)
-
 
                 news_vectors_next_iter.append(news_vector)
                 user_vectors_next_iter.append(user_vector)
