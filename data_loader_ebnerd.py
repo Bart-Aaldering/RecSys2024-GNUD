@@ -9,7 +9,8 @@ import time
 import datetime
 import argparse
 import json
-from train import train
+#from train import train
+import os
 
 
 
@@ -65,6 +66,9 @@ def cat_to_id(df: pl.DataFrame, column_name: str):
     all_topics = df[column_name].unique().to_list()
     return df.with_columns(df[column_name].map_elements(lambda x: all_topics.index(x))), len(all_topics)
 
+#def art_to_idx(df: pl.DataFrame, id: str):
+    
+
 PATH = Path("Data/ebnerd_demo")
 # ARTICLES_PATH = Path("Data/ebnerd_demo")
 data_split = "train"
@@ -74,9 +78,9 @@ data_split = "train"
 df_history = pl.scan_parquet(PATH.joinpath(data_split, "history.parquet"))
 df_articles = pl.scan_parquet(PATH.joinpath("articles.parquet"))
 
-
-df_history = df_history.select(["user_id", "article_id_fixed"])
-json_history = json.loads(df_history.collect().write_json(row_oriented=True))
+print(os.getcwd())
+df_history = df_history.collect().select(["user_id", "article_id_fixed"])
+json_history = json.loads(df_history.write_json(row_oriented=True))
 
 # df_behaviors = df_behaviors.select(["user_id", "article_id"])
 # json_behaviors = json.loads(df_behaviors.collect().write_json(row_oriented=True))
@@ -87,11 +91,11 @@ json_history = json.loads(df_history.collect().write_json(row_oriented=True))
 #                     'article_type', 'ner_clusters', 'entity_groups', 'topics', 'category', 
 #                     'subcategory', 'total_inviews', 'total_pageviews', 'total_read_time', 
 #                     'sentiment_score', 'sentiment_label']
-relevant_columns = ['title', 'ner_clusters', 'entity_groups', 'article_type', 'premium']
+relevant_columns = ['article_id', 'title', 'ner_clusters', 'entity_groups', 'article_type', 'premium']
 entity_columns = ['ner_clusters', 'entity_groups', 'article_type', 'premium']
 nested_columns = ['title', 'ner_clusters', 'entity_groups']
 # df_articles = df_articles.collect().select(relevant_columns)
-df_articles = df_articles.head(2000).collect().select(relevant_columns)
+df_articles = df_articles.collect().select(relevant_columns)
 
 print(df_articles.head(10))
 # read_time_fixed impression_time_fixed scroll_percentage_fixed
@@ -117,7 +121,17 @@ for group_list in df_articles['entity_groups']: # Get amount of groups that we h
 n_ner_groups = len(all)
 all_groups = [list(df_articles['entity_groups'][i]) + [n_ner_groups + 1] + [n_ner_groups + 2] for i in range(len(df_articles))]
 
-        
+# Mapping article ids to indices in article data
+art_id_to_idx = {}
+for row in range(len(df_articles)):
+    id = df_articles[row]['article_id'][0]
+    art_id_to_idx[id] = row
+
+#df_history = df_history.with_columns(df_history['article_id'].map_elements(lambda x: [art_id_to_idx[article_id] for article_id in x]))
+# Remap article ids in history
+for user in range(len(json_history)):
+    json_history[user]['article_id_fixed'] = [art_id_to_idx[id] for id in json_history[user]['article_id_fixed']]
+
 # pl.Series("entitys", all_entities)
 # pl.Series("groups", all_groups)
 
@@ -177,7 +191,6 @@ def main(args):
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
                                                 replace=True)
         entity_news[j] = np.array([t_entity_news[j][k] for k in sampled_indices])
-    print(news_title)
     news_title = np.array(news_title)
     
     len_news = len(json_articles)
@@ -205,27 +218,28 @@ def main(args):
 
         # t1 = trans_time(json_history[user]['time'][-1], json_history[user]['publishtime'][-1])
         data.append([user, json_history[user]['article_id_fixed'][-1], None, 1])
+        
 
-        read_news = [x[-1] for x in json_history[user]]
-        negtive = str(random.sample(set(range(1, len_news + 1)) - set(read_news), 1)[0])
+        read_news = [x for x in json_history[user]['article_id_fixed']]
+        negative = str(random.sample(sorted(set(range(1, len_news + 1)) - set(read_news)), 1)[0]) # Can't sample set, had to change this
         # t2 = trans_time(json_articles[negtive]['time'], json_articles[negtive]['publishtime'])
-        data.append([user, negtive, None, 0])
+        data.append([user, negative, None, 0])
         
     # sample user neighbors of news
-    for article_id in range(len(t_news_user)):
-        n_neighbors = len(t_news_user[article_id])
+    for article in t_news_user.keys():
+        n_neighbors = len(t_news_user[article])
         if n_neighbors >= args.user_neighbor:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
                                                 replace=False)
         else:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
                                                 replace=True)
-        news_user[article_id] = np.array([t_news_user[article_id][j] for j in sampled_indices])
+        news_user[article] = np.array([t_news_user[article][j] for j in sampled_indices])
 
     # dataset split
     train_data, eval_data, test_data = dataset_split(np.array(data), args)
 
-    news_group = entity_news
+    news_group = entity_news # Whyyy
 
 
     eval_indices = np.random.choice(list(range(test_data.shape[0])), size=int(test_data.shape[0] * 0.2), replace=False)
