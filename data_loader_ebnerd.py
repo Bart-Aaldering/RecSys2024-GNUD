@@ -9,7 +9,7 @@ import time
 import datetime
 import argparse
 import json
-#from train import train
+from train import train
 import os
 
 
@@ -78,7 +78,6 @@ data_split = "train"
 df_history = pl.scan_parquet(PATH.joinpath(data_split, "history.parquet"))
 df_articles = pl.scan_parquet(PATH.joinpath("articles.parquet"))
 
-print(os.getcwd())
 df_history = df_history.collect().select(["user_id", "article_id_fixed"])
 json_history = json.loads(df_history.write_json(row_oriented=True))
 
@@ -97,13 +96,11 @@ nested_columns = ['title', 'ner_clusters', 'entity_groups']
 # df_articles = df_articles.collect().select(relevant_columns)
 df_articles = df_articles.collect().select(relevant_columns)
 
-print(df_articles.head(10))
 # read_time_fixed impression_time_fixed scroll_percentage_fixed
 # nested_columns = ['ner_clusters', 'entity_groups', 'topics', 'subcategory', 'image_ids']
 
 # df_articles = datetime_to_int(df_articles, ['last_modified_time', 'published_time'])
 df_articles = df_articles.with_columns(df_articles['title'].map_elements(lambda x: x.split()))
-print(df_articles.head(10))
 column_n_unique = {}
 for column in nested_columns:
     df_articles, length = catlist_to_idlist(df_articles, column)
@@ -113,7 +110,6 @@ for column in ['article_type', 'premium']:
     df_articles, length = cat_to_id(df_articles, column)
     column_n_unique[column] = length
 
-print(df_articles.head(10))
 all_entities = [list(df_articles['ner_clusters'][i]) + [df_articles['premium'][i]] + [df_articles['article_type'][i]] for i in range(len(df_articles))]
 all = set()
 for group_list in df_articles['entity_groups']: # Get amount of groups that we have already
@@ -201,8 +197,8 @@ def main(args):
     data = []
     for user in range(len(json_history)):
         for article_id in range(len(json_history[user]['article_id_fixed'])):
-            t_user_news[int(user)].append(json_history[user]['article_id_fixed'][article_id])
-            t_news_user[json_history[user]['article_id_fixed'][article_id]].append(json_history[user]['user_id'])
+            t_user_news[user].append(json_history[user]['article_id_fixed'][article_id])
+            t_news_user[json_history[user]['article_id_fixed'][article_id]].append(user)
 
         # sample news neighbors of user
         n_neighbors = len(t_user_news[int(user)])
@@ -221,7 +217,7 @@ def main(args):
         
 
         read_news = [x for x in json_history[user]['article_id_fixed']]
-        negative = str(random.sample(sorted(set(range(1, len_news + 1)) - set(read_news)), 1)[0]) # Can't sample set, had to change this
+        negative = random.sample(sorted(set(range(1, len_news + 1)) - set(read_news)), 1)[0] # Can't sample set, had to change this
         # t2 = trans_time(json_articles[negtive]['time'], json_articles[negtive]['publishtime'])
         data.append([user, negative, None, 0])
         
@@ -239,27 +235,25 @@ def main(args):
     # dataset split
     train_data, eval_data, test_data = dataset_split(np.array(data), args)
 
-    news_group = entity_news # Whyyy
 
+    # eval_indices = np.random.choice(list(range(test_data.shape[0])), size=int(test_data.shape[0] * 0.2), replace=False)
+    # test_indices = list(set(range(test_data.shape[0])) - set(eval_indices))
+    # eval_data = test_data[eval_indices]
+    # test_data = test_data[test_indices]
 
-    eval_indices = np.random.choice(list(range(test_data.shape[0])), size=int(test_data.shape[0] * 0.2), replace=False)
-    test_indices = list(set(range(test_data.shape[0])) - set(eval_indices))
-    eval_data = test_data[eval_indices]
-    test_data = test_data[test_indices]
+    # np.random.shuffle(test_data)
+    # np.random.shuffle(train_data)
+    # l = int(len(test_data) * 0.1)
 
-    np.random.shuffle(test_data)
-    np.random.shuffle(train_data)
-    l = int(len(test_data) * 0.1)
+    # eval_data = test_data[:l]
+    # test_data = test_data[l:]
 
-    eval_data = test_data[:l]
-    test_data = test_data[l:]
-
-    cutoff_user_news = len(user_news)*0.8
-    cutoff_news_user = len(news_user)*0.8
-    train_user_news = user_news[:cutoff_user_news]
-    train_news_user = news_user[:cutoff_news_user]
-    test_user_news = user_news[cutoff_user_news:]
-    test_news_user = news_user[cutoff_news_user:]
+    # cutoff_user_news = len(user_news)*0.8
+    # cutoff_news_user = len(news_user)*0.8
+    # train_user_news = user_news[:cutoff_user_news]
+    # train_news_user = news_user[:cutoff_news_user]
+    # test_user_news = user_news[cutoff_user_news:]
+    # test_news_user = news_user[cutoff_news_user:]
 
     train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
 
