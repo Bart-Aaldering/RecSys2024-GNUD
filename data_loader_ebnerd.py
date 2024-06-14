@@ -157,6 +157,7 @@ def main(args):
     t_entity_news = defaultdict(list)
     entity_news = np.zeros([1 + n_entity, args.news_neighbor], dtype=np.int64)
     news_entity = np.zeros([1 + len(json_articles), args.entity_neighbor], dtype=np.int64)
+    news_group = np.zeros([1 + len(json_articles), args.entity_neighbor], dtype=np.int64)
     for article_id in range(len(json_articles)):
 
         if len(json_articles[article_id]['title']) <= args.title_len:
@@ -164,6 +165,7 @@ def main(args):
         news_title.append(json_articles[article_id]['title'][:args.title_len])
         # sample entity neighbors of news
         entities = all_entities[article_id]
+        groups = all_groups[article_id]
         n_neighbors = len(entities)
         if n_neighbors >= args.entity_neighbor:
 
@@ -173,6 +175,7 @@ def main(args):
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.entity_neighbor,
                                                 replace=True)
         news_entity[article_id] = np.array([entities[j] for j in sampled_indices])
+        news_group[article_id] = np.array([groups[j] for j in sampled_indices])
 
         for e in entities:
             t_entity_news[e].append(article_id)
@@ -240,7 +243,7 @@ def main(args):
     train_news_user = news_user
     test_news_user = news_user
 
-    news_group = all_groups
+    
 
     return train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
 
