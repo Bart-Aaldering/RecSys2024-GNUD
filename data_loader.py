@@ -81,13 +81,13 @@ def train_random_neighbor(args, train_user_news, train_news_user, news_len):
         user_news[i] = np.array([train_user_news[i][k] for k in sampled_indices])
 
     news_user = np.zeros([news_len, args.user_neighbor], dtype=np.int32)
-    for i in train_news_user:
+    for i in range(len(train_news_user)):
         n_neighbors = len(train_news_user[i])
         if n_neighbors >= args.user_neighbor:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor, replace=False)
         else:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor, replace=True)
-        news_user[int(i)] = np.array([train_news_user[i][k] for k in sampled_indices])
+        news_user[i] = np.array([train_news_user[i][k] for k in sampled_indices])
 
     return user_news, news_user
 

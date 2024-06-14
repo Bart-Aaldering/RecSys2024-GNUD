@@ -155,9 +155,9 @@ json_articles = json.loads(df_articles.write_json(row_oriented=True))
 def main(args):
     news_title = []
     t_entity_news = defaultdict(list)
-    entity_news = np.zeros([1 + n_entity, args.news_neighbor], dtype=np.int64)
-    news_entity = np.zeros([1 + len(json_articles), args.entity_neighbor], dtype=np.int64)
-    news_group = np.zeros([1 + len(json_articles), args.entity_neighbor], dtype=np.int64)
+    entity_news = np.zeros([n_entity, args.news_neighbor], dtype=np.int64)
+    news_entity = np.zeros([len(json_articles), args.entity_neighbor], dtype=np.int64)
+    news_group = np.zeros([len(json_articles), args.entity_neighbor], dtype=np.int64)
     for article_id in range(len(json_articles)):
 
         if len(json_articles[article_id]['title']) <= args.title_len:
@@ -195,8 +195,8 @@ def main(args):
     len_news = len(json_articles)
     t_user_news = defaultdict(list)
     t_news_user = defaultdict(list)
-    user_news = np.zeros([1+len(json_history), args.news_neighbor], dtype=np.int32)
-    news_user = np.zeros([1+len_news, args.user_neighbor], dtype=np.int32)
+    user_news = np.zeros([len(json_history), args.news_neighbor], dtype=np.int32)
+    news_user = np.zeros([len_news, args.user_neighbor], dtype=np.int32)
     data = []
     for user in range(len(json_history)):
         for article_id in range(len(json_history[user]['article_id_fixed'])):
@@ -250,9 +250,9 @@ def main(args):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--news_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
-parser.add_argument("--entity_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
+parser.add_argument("--entity_neighbor", type=int, default=40, help="the number of neighbors to be sampled")
 parser.add_argument("--user_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
-parser.add_argument("--title_len", type=int, default=20, help="the max length of title")
+parser.add_argument("--title_len", type=int, default=10, help="the max length of title")
 parser.add_argument("--ratio", type=float, default=0.2, help="the ratio of train data")
 
 
