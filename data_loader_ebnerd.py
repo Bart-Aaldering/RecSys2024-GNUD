@@ -50,7 +50,7 @@ def get_minutes(timedelta):
 
 def datetime_to_int(df: pl.DataFrame, column_names: List[str]):
     for column_name in column_names:
-        df = df.with_columns(((df[column_name] - df[column_name].min()).map_elements(get_minutes)))
+        df = df.with_columns(((df[column_name] - df[column_name].min()).apply(get_minutes)))
     return df
 
 def catlist_to_idlist(df: pl.DataFrame, column_name: str):
@@ -60,11 +60,11 @@ def catlist_to_idlist(df: pl.DataFrame, column_name: str):
             if topic not in all_topics:
                 all_topics.add(topic)
     all_topics = list(all_topics)
-    return df.with_columns(df[column_name].map_elements(lambda x: [all_topics.index(topic) for topic in x])), len(all_topics)
+    return df.with_columns(df[column_name].apply(lambda x: [all_topics.index(topic) for topic in x])), len(all_topics)
 
 def cat_to_id(df: pl.DataFrame, column_name: str):
     all_topics = df[column_name].unique().to_list()
-    return df.with_columns(df[column_name].map_elements(lambda x: all_topics.index(x))), len(all_topics)
+    return df.with_columns(df[column_name].apply(lambda x: all_topics.index(x))), len(all_topics)
 
 #def art_to_idx(df: pl.DataFrame, id: str):
     
@@ -100,7 +100,7 @@ df_articles = df_articles.collect().select(relevant_columns)
 # nested_columns = ['ner_clusters', 'entity_groups', 'topics', 'subcategory', 'image_ids']
 
 # df_articles = datetime_to_int(df_articles, ['last_modified_time', 'published_time'])
-df_articles = df_articles.with_columns(df_articles['title'].map_elements(lambda x: x.split()))
+df_articles = df_articles.with_columns(df_articles['title'].apply(lambda x: x.split()))
 column_n_unique = {}
 for column in nested_columns:
     df_articles, length = catlist_to_idlist(df_articles, column)
@@ -123,7 +123,7 @@ for row in range(len(df_articles)):
     id = df_articles[row]['article_id'][0]
     art_id_to_idx[id] = row
 
-#df_history = df_history.with_columns(df_history['article_id'].map_elements(lambda x: [art_id_to_idx[article_id] for article_id in x]))
+#df_history = df_history.with_columns(df_history['article_id'].apply(lambda x: [art_id_to_idx[article_id] for article_id in x]))
 # Remap article ids in history
 for user in range(len(json_history)):
     json_history[user]['article_id_fixed'] = [art_id_to_idx[id] for id in json_history[user]['article_id_fixed']]
@@ -235,27 +235,14 @@ def main(args):
     # dataset split
     train_data, eval_data, test_data = dataset_split(np.array(data), args)
 
+    train_user_news = user_news
+    test_user_news = user_news
+    train_news_user = news_user
+    test_news_user = news_user
 
-    # eval_indices = np.random.choice(list(range(test_data.shape[0])), size=int(test_data.shape[0] * 0.2), replace=False)
-    # test_indices = list(set(range(test_data.shape[0])) - set(eval_indices))
-    # eval_data = test_data[eval_indices]
-    # test_data = test_data[test_indices]
+    news_group = all_groups
 
-    # np.random.shuffle(test_data)
-    # np.random.shuffle(train_data)
-    # l = int(len(test_data) * 0.1)
-
-    # eval_data = test_data[:l]
-    # test_data = test_data[l:]
-
-    # cutoff_user_news = len(user_news)*0.8
-    # cutoff_news_user = len(news_user)*0.8
-    # train_user_news = user_news[:cutoff_user_news]
-    # train_news_user = news_user[:cutoff_news_user]
-    # test_user_news = user_news[cutoff_user_news:]
-    # test_news_user = news_user[cutoff_news_user:]
-
-    train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
+    return train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
 
 
 parser = argparse.ArgumentParser()
@@ -264,6 +251,39 @@ parser.add_argument("--entity_neighbor", type=int, default=30, help="the number 
 parser.add_argument("--user_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
 parser.add_argument("--title_len", type=int, default=20, help="the max length of title")
 parser.add_argument("--ratio", type=float, default=0.2, help="the ratio of train data")
+
+
+parser.add_argument('--dataset', type=str, default='ten_week', help='which dataset to use')
+# parser.add_argument('--title_len', type=int, default=10, help='the max length of title')
+parser.add_argument('--session_len', type=int, default=10, help='the max length of session')
+parser.add_argument('--aggregator', type=str, default='neighbor', help='which aggregator to use')
+parser.add_argument('--n_epochs', type=int, default=1, help='the number of epochs')
+# parser.add_argument('--user_neighbor', type=int, default=30, help='the number of neighbors to be sampled')
+# parser.add_argument('--news_neighbor', type=int, default=10, help='the number of neighbors to be sampled')
+# parser.add_argument('--entity_neighbor', type=int, default=1, help='the number of neighbors to be sampled')
+parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
+parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
+parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
+parser.add_argument('--batch_size', type=int, default=128, help='batch size')
+parser.add_argument('--l2_weight', type=float, default=5e-3, help='weight of l2 regularization')
+parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')  #3e-4
+parser.add_argument('--save_path', type=str, default="./data/1week/hop2/version1/", help='model save path')
+parser.add_argument('--test', type=int, default=0, help='test')
+parser.add_argument('--use_group', type=int, default=1, help='whether use group')
+parser.add_argument('--n_filters', type=int, default=64, help='number of filters for each size in KCNN')
+parser.add_argument('--filter_sizes', type=int, default=[2, 3], nargs='+',
+                    help='list of filter sizes, e.g., --filter_sizes 2 3')
+parser.add_argument('--ncaps', type=int, default=7,
+                    help='Maximum number of capsules per layer.')
+parser.add_argument('--dcaps', type=int, default=0, help='Decrease this number of capsules per layer.')
+parser.add_argument('--nhidden', type=int, default=16,
+                        help='Number of hidden units per capsule.')
+parser.add_argument('--routit', type=int, default=7,
+                    help='Number of iterations when routing.')
+parser.add_argument('--balance', type=float, default=0.004, help='learning rate')  #3e-4
+parser.add_argument('--version', type=int, default=0,
+                        help='Different version under the same set')
+
 args = parser.parse_args()
 
 data = main(args)
