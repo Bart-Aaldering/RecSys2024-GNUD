@@ -11,6 +11,8 @@ import argparse
 import json
 from train import train
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 
@@ -267,7 +269,7 @@ parser.add_argument('--n_epochs', type=int, default=1, help='the number of epoch
 parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
 parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
 parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
-parser.add_argument('--batch_size', type=int, default=128, help='batch size')
+parser.add_argument('--batch_size', type=int, default=16, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=5e-3, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')  #3e-4
 parser.add_argument('--save_path', type=str, default="./data/1week/hop2/version1/", help='model save path')
