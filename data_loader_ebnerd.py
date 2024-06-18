@@ -73,7 +73,7 @@ PATH = Path("Data/ebnerd_demo")
 data_split = "train"
 
 
-# df_behaviors = pl.scan_parquet(PATH.joinpath(data_split, "behaviors.parquet"))
+df_behaviors = pl.scan_parquet(PATH.joinpath(data_split, "behaviors.parquet"))
 df_history = pl.scan_parquet(PATH.joinpath(data_split, "history.parquet"))
 df_articles = pl.scan_parquet(PATH.joinpath("articles.parquet"))
 
@@ -240,7 +240,7 @@ parser.add_argument("--ratio", type=float, default=0.2, help="the ratio of train
 parser.add_argument('--dataset', type=str, default='ten_week', help='which dataset to use')
 parser.add_argument('--session_len', type=int, default=10, help='the max length of session')
 parser.add_argument('--aggregator', type=str, default='neighbor', help='which aggregator to use')
-parser.add_argument('--n_epochs', type=int, default=1, help='the number of epochs')
+parser.add_argument('--n_epochs', type=int, default=5, help='the number of epochs')
 parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
 parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
 parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
