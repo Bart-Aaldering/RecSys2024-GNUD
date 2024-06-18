@@ -1,0 +1,34 @@
+#!/bin/bash
+#SBATCH --job-name=run_main
+#SBATCH --partition=gpu
+#SBATCH --gpus=1
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=18
+#SBATCH --mem=120gb
+#SBATCH --time=01:00:00
+#SBATCH --output=Output/%x_%j.out
+#SBATCH --error=Output/%x_%j.err
+
+echo "[$SHELL] #### Starting Python test"
+echo "[$SHELL] ## This is $SLURM_JOB_USER on $HOSTNAME and this job has the ID $SLURM_JOB_ID"
+
+module purge
+module load 2022
+module load Anaconda3/2022.05
+
+# Your job starts in the directory where you call sbatch
+cd $HOME/RecSys2024-GNUD
+# Activate your environment
+source activate recsys
+
+# Run your code
+echo "[$SHELL] ## Run script"
+srun python data_loader_ebnerd.py
+echo "[$SHELL] ## Script finished"
+
+
+
+
+
+
