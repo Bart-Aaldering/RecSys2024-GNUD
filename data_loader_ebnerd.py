@@ -11,11 +11,9 @@ import argparse
 import json
 from train import train
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
-
-
 
 
 def trans_time(linux_time, utc_time):
@@ -68,7 +66,6 @@ def cat_to_id(df: pl.DataFrame, column_name: str):
     all_topics = df[column_name].unique().to_list()
     return df.with_columns(df[column_name].apply(lambda x: all_topics.index(x))), len(all_topics)
 
-#def art_to_idx(df: pl.DataFrame, id: str):
     
 
 PATH = Path("Data/ebnerd_demo")
@@ -125,31 +122,15 @@ for row in range(len(df_articles)):
     id = df_articles[row]['article_id'][0]
     art_id_to_idx[id] = row
 
-#df_history = df_history.with_columns(df_history['article_id'].apply(lambda x: [art_id_to_idx[article_id] for article_id in x]))
 # Remap article ids in history
 for user in range(len(json_history)):
     json_history[user]['article_id_fixed'] = [art_id_to_idx[id] for id in json_history[user]['article_id_fixed']]
 
-# pl.Series("entitys", all_entities)
-# pl.Series("groups", all_groups)
-
-# start_of_id = 0
-# for column in entity_columns:
-#     df_articles = df_articles.with_columns(df_articles[column] + start_of_id)
-#     start_of_id += df_articles[column].n_unique()
-
-# for column in entity_columns:
-#     print(column)
-#     print(df_articles[column].min())
-#     print(df_articles[column].max())
 
 all = set()
 for entity_list in all_entities:
     all |= set(entity_list)
 n_entity = len(all)
-# n_entity = len(set([entities for entities in all_entities]))
-
-
 
 json_articles = json.loads(df_articles.write_json(row_oriented=True))
 
@@ -256,20 +237,14 @@ parser.add_argument("--entity_neighbor", type=int, default=40, help="the number 
 parser.add_argument("--user_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
 parser.add_argument("--title_len", type=int, default=10, help="the max length of title")
 parser.add_argument("--ratio", type=float, default=0.2, help="the ratio of train data")
-
-
 parser.add_argument('--dataset', type=str, default='ten_week', help='which dataset to use')
-# parser.add_argument('--title_len', type=int, default=10, help='the max length of title')
 parser.add_argument('--session_len', type=int, default=10, help='the max length of session')
 parser.add_argument('--aggregator', type=str, default='neighbor', help='which aggregator to use')
 parser.add_argument('--n_epochs', type=int, default=1, help='the number of epochs')
-# parser.add_argument('--user_neighbor', type=int, default=30, help='the number of neighbors to be sampled')
-# parser.add_argument('--news_neighbor', type=int, default=10, help='the number of neighbors to be sampled')
-# parser.add_argument('--entity_neighbor', type=int, default=1, help='the number of neighbors to be sampled')
 parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
 parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
 parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
-parser.add_argument('--batch_size', type=int, default=16, help='batch size')
+parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=5e-3, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')  #3e-4
 parser.add_argument('--save_path', type=str, default="./Data/1week/hop2/version1/", help='model save path')

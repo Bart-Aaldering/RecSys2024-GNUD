@@ -1,0 +1,42 @@
+[/bin/bash] #### Starting Python test
+[/bin/bash] ## This is scur1564 on gcn65 and this job has the ID 6671849
+[/bin/bash] ## Run script
+splitting dataset ...
+3180 1272 1272 636
+1590
+news---hop----0 [<tf.Tensor 'ExpandDims:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_6/Identity:0' shape=(32, 30) dtype=int32>] [<tf.Tensor 'Reshape_5:0' shape=(32, 1, 112) dtype=float32>]
+user---hop----0 [<tf.Tensor 'ExpandDims_1:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_8/Identity:0' shape=(32, 30) dtype=int32>] [<tf.Tensor 'Reshape_7:0' shape=(32, 1, 112) dtype=float32>]
+news---hop----1 [<tf.Tensor 'ExpandDims:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_6/Identity:0' shape=(32, 30) dtype=int32>, <tf.Tensor 'Reshape_10:0' shape=(32, 900) dtype=int32>] [<tf.Tensor 'Reshape_5:0' shape=(32, 1, 112) dtype=float32>, <tf.Tensor 'Reshape_9:0' shape=(32, 30, 112) dtype=float32>]
+news---hop----1 [<tf.Tensor 'ExpandDims_1:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_8/Identity:0' shape=(32, 30) dtype=int32>, <tf.Tensor 'Reshape_17:0' shape=(32, 900) dtype=int32>] [<tf.Tensor 'Reshape_7:0' shape=(32, 1, 112) dtype=float32>, <tf.Tensor 'Reshape_16:0' shape=(32, 30, 112) dtype=float32>]
+news---hop----2 [<tf.Tensor 'ExpandDims:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_6/Identity:0' shape=(32, 30) dtype=int32>, <tf.Tensor 'Reshape_10:0' shape=(32, 900) dtype=int32>, <tf.Tensor 'Reshape_24:0' shape=(32, 27000) dtype=int32>] [<tf.Tensor 'Reshape_5:0' shape=(32, 1, 112) dtype=float32>, <tf.Tensor 'Reshape_9:0' shape=(32, 30, 112) dtype=float32>, <tf.Tensor 'Reshape_23:0' shape=(32, 900, 112) dtype=float32>]
+user---hop----2 [<tf.Tensor 'ExpandDims_1:0' shape=(32, 1) dtype=int32>, <tf.Tensor 'embedding_lookup_8/Identity:0' shape=(32, 30) dtype=int32>, <tf.Tensor 'Reshape_17:0' shape=(32, 900) dtype=int32>, <tf.Tensor 'Reshape_27:0' shape=(32, 27000) dtype=int32>] [<tf.Tensor 'Reshape_7:0' shape=(32, 1, 112) dtype=float32>, <tf.Tensor 'Reshape_16:0' shape=(32, 30, 112) dtype=float32>, <tf.Tensor 'Reshape_26:0' shape=(32, 900, 112) dtype=float32>]
+layer-- 0
+news--hop 0 Tensor("Reshape_5:0", shape=(32, 1, 112), dtype=float32) Tensor("Reshape_28:0", shape=(32, 1, 30, 112), dtype=float32)
+user--hop 0 Tensor("Reshape_7:0", shape=(32, 1, 112), dtype=float32) Tensor("Reshape_29:0", shape=(32, 1, 30, 112), dtype=float32)
+news--hop 1 Tensor("dropout_1/mul_1:0", shape=(32, 30, 112), dtype=float32) Tensor("Reshape_76:0", shape=(32, 30, 30, 112), dtype=float32)
+user--hop 1 Tensor("dropout_4/mul_1:0", shape=(32, 30, 112), dtype=float32) Tensor("Reshape_77:0", shape=(32, 30, 30, 112), dtype=float32)
+layer-- 1
+news--hop 0 Tensor("dropout_2/mul_1:0", shape=(32, 1, 112), dtype=float32) Tensor("Reshape_128:0", shape=(32, 1, 30, 112), dtype=float32)
+user--hop 0 Tensor("dropout_5/mul_1:0", shape=(32, 1, 112), dtype=float32) Tensor("Reshape_129:0", shape=(32, 1, 30, 112), dtype=float32)
+(32, 112)
+(32,)
+build tensor graph over!
+1590
+epoch 0    train auc: 0.8449  f1: 0.8386    eval auc: 0.8523  f1: 0.8550
+test auc: 0.8435  f1: 0.8314
+[/bin/bash] ## Script finished
+
+JOB STATISTICS
+==============
+Job ID: 6671849
+Cluster: snellius
+User/Group: scur1564/scur1564
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 01:14:24 core-walltime
+Job Wall-clock time: 00:04:08
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
