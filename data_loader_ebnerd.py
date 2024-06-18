@@ -11,6 +11,8 @@ import argparse
 import json
 from train import train
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 

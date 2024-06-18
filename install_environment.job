@@ -12,5 +12,5 @@ module purge
 module load 2022
 module load Anaconda3/2022.05
 
-cd $HOME/
+cd $HOME/RecSys2024-GNUD
 conda env create -f environment.yaml
