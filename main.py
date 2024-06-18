@@ -46,11 +46,11 @@ parser.add_argument('--version', type=int, default=0,
 show_loss = True
 show_time = True
 
-t = time()
+t = time.time()
 
 args = parser.parse_args()
 data = load_data(args)
 train(args, data, show_loss)
 
 if show_time:
-   print('time used: %d s' % (time() - t))
+   print('time used: %d s' % (time.time() - t))

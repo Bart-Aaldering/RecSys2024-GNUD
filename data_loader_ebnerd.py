@@ -110,7 +110,7 @@ def create_graph(json_history, len_news, args):
     
 def load_data(args):
     PATH = Path("Data/ebnerd_demo")
-    TEST_PATH = Path("Data/ebnerd_testset/test")
+    TEST_PATH = Path("Data/ebnerd_testset")
     
     # df_behaviors = pl.scan_parquet(PATH.joinpath(data_split, "behaviors.parquet"))
     
