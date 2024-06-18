@@ -14,7 +14,8 @@ import os
 
 
 
-
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def trans_time(linux_time, utc_time):
     UTC_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -74,7 +75,7 @@ PATH = Path("Data/ebnerd_demo")
 data_split = "train"
 
 
-# df_behaviors = pl.scan_parquet(PATH.joinpath(data_split, "behaviors.parquet"))
+df_behaviors = pl.scan_parquet(PATH.joinpath(data_split, "behaviors.parquet"))
 df_history = pl.scan_parquet(PATH.joinpath(data_split, "history.parquet"))
 df_articles = pl.scan_parquet(PATH.joinpath("articles.parquet"))
 
@@ -260,17 +261,17 @@ parser.add_argument('--dataset', type=str, default='ten_week', help='which datas
 # parser.add_argument('--title_len', type=int, default=10, help='the max length of title')
 parser.add_argument('--session_len', type=int, default=10, help='the max length of session')
 parser.add_argument('--aggregator', type=str, default='neighbor', help='which aggregator to use')
-parser.add_argument('--n_epochs', type=int, default=1, help='the number of epochs')
+parser.add_argument('--n_epochs', type=int, default=5, help='the number of epochs')
 # parser.add_argument('--user_neighbor', type=int, default=30, help='the number of neighbors to be sampled')
 # parser.add_argument('--news_neighbor', type=int, default=10, help='the number of neighbors to be sampled')
 # parser.add_argument('--entity_neighbor', type=int, default=1, help='the number of neighbors to be sampled')
 parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
 parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
 parser.add_argument('--n_iter', type=int, default=2, help='number of iterations when computing entity representation')
-parser.add_argument('--batch_size', type=int, default=128, help='batch size')
+parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=5e-3, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')  #3e-4
-parser.add_argument('--save_path', type=str, default="./data/1week/hop2/version1/", help='model save path')
+parser.add_argument('--save_path', type=str, default="./Data/1week/hop2/version1/", help='model save path')
 parser.add_argument('--test', type=int, default=0, help='test')
 parser.add_argument('--use_group', type=int, default=1, help='whether use group')
 parser.add_argument('--n_filters', type=int, default=64, help='number of filters for each size in KCNN')
