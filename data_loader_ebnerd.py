@@ -270,7 +270,7 @@ parser.add_argument('--n_iter', type=int, default=2, help='number of iterations 
 parser.add_argument('--batch_size', type=int, default=128, help='batch size')
 parser.add_argument('--l2_weight', type=float, default=5e-3, help='weight of l2 regularization')
 parser.add_argument('--lr', type=float, default=0.0005, help='learning rate')  #3e-4
-parser.add_argument('--save_path', type=str, default="./data/1week/hop2/version1/", help='model save path')
+parser.add_argument('--save_path', type=str, default="./Data/1week/hop2/version1/", help='model save path')
 parser.add_argument('--test', type=int, default=0, help='test')
 parser.add_argument('--use_group', type=int, default=1, help='whether use group')
 parser.add_argument('--n_filters', type=int, default=64, help='number of filters for each size in KCNN')
