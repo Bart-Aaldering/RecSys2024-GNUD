@@ -13,7 +13,7 @@ from train import train
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def trans_time(linux_time, utc_time):
@@ -189,9 +189,7 @@ def load_data(args):
                 graph_history_icl_train[user]['article_id_fixed'].append(article)
             else:
                 train_history[user]['article_id_fixed'].append(article)
-                graph_history_icl_train[user]['article_id_fixed'].append(article)
-
-            
+                graph_history_icl_train[user]['article_id_fixed'].append(article)   
     
     all = set()
     for entity_list in all_entities:
