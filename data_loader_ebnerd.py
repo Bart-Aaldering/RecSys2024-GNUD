@@ -130,6 +130,11 @@ def load_data(args):
     df_articles = df_articles.collect().select(relevant_columns)
     df_articles = df_articles.with_columns(df_articles['title'].apply(lambda x: x.split()))
 
+    df_articles_test = pl.scan_parquet(TEST_PATH.joinpath("articles.parquet"))
+    df_articles_test = df_articles_test.collect().select(relevant_columns)
+    df_articles_test = df_articles_test.with_columns(df_articles_test['title'].apply(lambda x: x.split()))
+
+    df_articles = pl.concat([df_articles, df_articles_test]).unique(subset=['article_id'])
     
     column_n_unique = {}
     for column in nested_columns:
@@ -146,6 +151,7 @@ def load_data(args):
         all |= set(group_list)
     n_ner_groups = len(all)
     all_groups = [list(df_articles['entity_groups'][i]) + [n_ner_groups + 1] + [n_ner_groups + 2] for i in range(len(df_articles))]
+
 
     # Mapping article ids to indices in article data
     art_id_to_idx = {}
