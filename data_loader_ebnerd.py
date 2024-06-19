@@ -13,7 +13,7 @@ from train import train
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def trans_time(linux_time, utc_time):
