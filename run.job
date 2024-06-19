@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=run_main
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu_mig
 #SBATCH --gpus=1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=18
+#SBATCH --cpus-per-task=9
 #SBATCH --mem=120gb
-#SBATCH --time=01:00:00
+#SBATCH --time=00:15:00
 #SBATCH --output=Output/%x_%j.out
 #SBATCH --error=Output/%x_%j.err
 
@@ -24,7 +24,7 @@ source activate recsys
 
 # Run your code
 echo "[$SHELL] ## Run script"
-srun python data_loader_ebnerd.py
+srun python main.py
 echo "[$SHELL] ## Script finished"
 
 

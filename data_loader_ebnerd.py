@@ -189,9 +189,7 @@ def load_data(args):
                 graph_history_icl_train[user]['article_id_fixed'].append(article)
             else:
                 train_history[user]['article_id_fixed'].append(article)
-                graph_history_icl_train[user]['article_id_fixed'].append(article)
-
-            
+                graph_history_icl_train[user]['article_id_fixed'].append(article)   
     
     all = set()
     for entity_list in all_entities:
