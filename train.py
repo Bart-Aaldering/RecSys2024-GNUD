@@ -17,16 +17,16 @@ def train(args, data, show_loss):
 
     model = Model(args, news_title, news_entity, news_group, len(train_user_news), len(news_title))
 
-    gpu_options = tf.GPUOptions()
-    config = tf.ConfigProto(gpu_options=gpu_options)
+    gpu_options = tf.compat.v1.GPUOptions()
+    config = tf.compat.v1.ConfigProto(gpu_options=gpu_options)
 
     config.gpu_options.allow_growth = True
-    with tf.Session(config=config) as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session(config=config) as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
         if not os.path.exists(args.save_path):
             os.makedirs(args.save_path)
-        # saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
-        saver = tf.train.Saver()
+        # saver = tf.compat.v1.train.Saver(write_version=tf.compat.v1.train.SaverDef.V2)
+        saver = tf.compat.v1.train.Saver()
         file = open("local-" + "balance" + str(args.balance) + ".txt", "a")
         global_step = 0
         for step in range(args.n_epochs):

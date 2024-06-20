@@ -198,7 +198,7 @@ def load_data(args):
                 graph_history_icl_train[user]['article_id_fixed'].append(article)   
         # make sure all users have at least one article in the training set
         if len(graph_history[user]['article_id_fixed']) == 0:
-            graph_history[user]['article_id_fixed'].append(json_history_train[user]['article_id_fixed'][article])
+            graph_history[user]['article_id_fixed'].append(article)
         # if len(graph_history_icl_train[user]['article_id_fixed']) == 0:
         #     graph_history_icl_train[user]['article_id_fixed'].append(json_history_train[user]['article_id_fixed'][0])
 
