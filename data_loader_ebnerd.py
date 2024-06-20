@@ -16,7 +16,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
-
+# import tensorflow as tf
+# check if GPU is available
+# print("1", tf.test.is_gpu_available())
+# print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+# print("3",tf.test.gpu_device_name())
 
 def catlist_to_idlist(df: pl.DataFrame, column_name: str):
     all_topics = set()
@@ -81,34 +85,37 @@ def load_data(args):
     
     df_history_train = pl.scan_parquet(PATH.joinpath("train", "history.parquet"))
     df_history_valid = pl.scan_parquet(PATH.joinpath("validation", "history.parquet"))
-    df_history_test = pl.scan_parquet(PATH.joinpath("validation", "history.parquet"))
     #df_history_test = pl.scan_parquet(TEST_PATH.joinpath("test", "history.parquet"))
     
 
     json_history_train = json.loads(df_history_train.collect().select(["user_id", "article_id_fixed", "impression_time_fixed"]).write_json(row_oriented=True))
     json_history_valid = json.loads(df_history_valid.collect().select(["user_id", "article_id_fixed", "impression_time_fixed"]).write_json(row_oriented=True))
-    json_history_test = json.loads(df_history_test.collect().select(["user_id", "article_id_fixed", "impression_time_fixed"]).write_json(row_oriented=True))
+    json_history_test = json.loads(df_history_valid.collect().select(["user_id", "article_id_fixed", "impression_time_fixed"]).write_json(row_oriented=True)) # load validation data as test data for now
+    # json_history_test = json.loads(df_history_test.collect().select(["user_id", "article_id_fixed", "impression_time_fixed"]).write_json(row_oriented=True)) # load validation data as test data for now
 
     relevant_columns = ['article_id', 'title', 'ner_clusters', 'entity_groups', 'article_type', 'premium', 'category', 'subcategory', 'sentiment_label', 'topics']
-    unnested_columns = ['article_type', 'premium', 'category', 'sentiment_label']
-    nested_columns = ['title', 'ner_clusters', 'entity_groups', 'topics', 'subcategory']
+    title_column = 'title'
+    ner_column = 'ner_clusters'
+    ner_type_column = 'entity_groups'
+    unnested_entity_columns = ['article_type', 'premium', 'category', 'sentiment_label']
+    nested_entity_columns = ['topics', 'subcategory']
 
     df_articles = pl.scan_parquet(PATH.joinpath("articles.parquet"))
     df_articles = df_articles.collect().select(relevant_columns)
     df_articles = df_articles.with_columns(df_articles['title'].apply(lambda x: x.split()))
 
-    df_articles_test = pl.scan_parquet(TEST_PATH.joinpath("articles.parquet"))
-    df_articles_test = df_articles_test.collect().select(relevant_columns)
-    df_articles_test = df_articles_test.with_columns(df_articles_test['title'].apply(lambda x: x.split()))
+    # df_articles_test = pl.scan_parquet(TEST_PATH.joinpath("articles.parquet"))
+    # df_articles_test = df_articles_test.collect().select(relevant_columns)
+    # df_articles_test = df_articles_test.with_columns(df_articles_test['title'].apply(lambda x: x.split()))
 
-    df_articles = pl.concat([df_articles, df_articles_test]).unique(subset=['article_id'])
-    
+    # df_articles = pl.concat([df_articles, df_articles_test]).unique(subset=['article_id'])
+
     column_n_unique = {}
-    for column in nested_columns:
+    for column in nested_entity_columns + [title_column, ner_column, ner_type_column]:
         df_articles, length = catlist_to_idlist(df_articles, column)
         column_n_unique[column] = length
 
-    for column in unnested_columns:
+    for column in unnested_entity_columns:
         df_articles, length = cat_to_id(df_articles, column)
         column_n_unique[column] = length
 
@@ -116,9 +123,9 @@ def load_data(args):
     all_entities = []
     for i in range(len(df_articles)):
         article_entities = []
-        for column in ['entity_groups', 'topics', 'subcategory']:
+        for column in ['ner_clusters', 'topics', 'subcategory']:
             article_entities.extend(list(df_articles[column][i]))
-        for column in unnested_columns:
+        for column in unnested_entity_columns:
             article_entities.append(df_articles[column][i])
         all_entities.append(article_entities)
 
@@ -137,7 +144,7 @@ def load_data(args):
         article_groups.extend([n_ner_groups] * len(df_articles['topics'][i])) # Extend with representation for topic, using first unused number
         article_groups.extend([n_ner_groups + 1] * len(df_articles['subcategory'][i])) # Idem
         next_group_number = n_ner_groups + 2
-        for column in unnested_columns: # Append types for the single value columns
+        for column in unnested_entity_columns: # Append types for the single value columns
             article_groups.append(next_group_number)
             next_group_number += 1
         all_groups.append(article_groups)
@@ -189,7 +196,12 @@ def load_data(args):
             else:
                 train_history[user]['article_id_fixed'].append(article)
                 graph_history_icl_train[user]['article_id_fixed'].append(article)   
-    
+        # make sure all users have at least one article in the training set
+        if len(graph_history[user]['article_id_fixed']) == 0:
+            graph_history[user]['article_id_fixed'].append(json_history_train[user]['article_id_fixed'][article])
+        # if len(graph_history_icl_train[user]['article_id_fixed']) == 0:
+        #     graph_history_icl_train[user]['article_id_fixed'].append(json_history_train[user]['article_id_fixed'][0])
+
     all = set()
     for entity_list in all_entities:
         all |= set(entity_list)
@@ -211,6 +223,7 @@ def load_data(args):
         entities = all_entities[article_id]
         groups = all_groups[article_id]
         n_neighbors = len(entities)
+
         if n_neighbors >= args.entity_neighbor:
 
             sampled_indices = np.random.choice(list(range(args.entity_neighbor)), size=args.entity_neighbor,
@@ -237,9 +250,9 @@ def load_data(args):
     news_title = np.array(news_title)
     
     len_news = len(json_articles)
-    train_data = create_data(train_history, len_news)
-    eval_data = create_data(json_history_valid, len_news)
-    test_data = create_data(json_history_test, len_news)
+    train_data = np.array(create_data(train_history, len_news))
+    eval_data = np.array(create_data(json_history_valid, len_news))
+    test_data = np.array(create_data(json_history_test, len_news))
     train_user_news, train_news_user = create_graph(graph_history, len_news, args)
     test_user_news, test_news_user = create_graph(graph_history_icl_train, len_news, args)
 
