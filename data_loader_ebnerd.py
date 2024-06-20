@@ -16,12 +16,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
-# import tensorflow as tf
-# check if GPU is available
-# print("1", tf.test.is_gpu_available())
-# print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-# print("3",tf.test.gpu_device_name())
-
 def catlist_to_idlist(df: pl.DataFrame, column_name: str):
     all_topics = set()
     for row in df[column_name]:
