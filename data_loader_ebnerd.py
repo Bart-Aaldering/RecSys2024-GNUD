@@ -169,7 +169,7 @@ def load_data(args):
         for article, time in zip(json_history_train[user]['article_id_fixed'], json_history_train[user]['impression_time_fixed']):
             all_dates.append(time)
             
-    graph_cutoff = int(len(all) * (5/7))
+    graph_cutoff = int(len(all) * (5/6))
     
     graph_cutoff_date = all_dates[graph_cutoff]
     
