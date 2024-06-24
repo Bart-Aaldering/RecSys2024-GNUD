@@ -6,25 +6,7 @@ from train import train
 import os
 
 import tensorflow as tf
-
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-print("1", tf.test.is_gpu_available())
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-print("3",tf.test.gpu_device_name())
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-
-# check if GPU is available
-print("1", tf.test.is_gpu_available())
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-print("3",tf.test.gpu_device_name())
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-
-print("1", tf.test.is_gpu_available())
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-print("3",tf.test.gpu_device_name())
+print(tf.config.list_physical_devices('GPU'))
 
 def set_parse_arguments(ncaps=7, routit=7, n_iter=2):
    parser = argparse.ArgumentParser()

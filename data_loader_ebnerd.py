@@ -12,9 +12,6 @@ import json
 from train import train
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
 def catlist_to_idlist(df: pl.DataFrame, column_name: str):
     all_topics = set()
