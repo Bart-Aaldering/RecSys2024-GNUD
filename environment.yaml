@@ -1,14 +1,15 @@
 name: recsys_tf2
 channels:
-  - pytorch
-  - nvidia
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.9,<3.12
+  - python<3.11
+  - cudatoolkit=11.2
+  - cudnn=8.1.0
   - pip
   - pip:
-    - tensorflow>=2.12.0,<2.15
+    - numpy<2
+    - tensorflow<2.11
     - polars
     - pandas
     - scikit-learn
