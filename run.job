@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=20gb
-#SBATCH --time=00:15:00
+#SBATCH --time=04:00:00
 #SBATCH --output=Output/%x_%j.out
 #SBATCH --error=Output/%x_%j.err
 
@@ -20,7 +20,7 @@ module load Anaconda3/2022.05
 # Your job starts in the directory where you call sbatch
 cd $HOME/RecSys2024-GNUD
 # Activate your environment
-source activate recsys
+source activate recsys_tf2
 
 # Run your code
 echo "[$SHELL] ## Run script"
