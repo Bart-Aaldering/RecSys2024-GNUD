@@ -264,4 +264,5 @@ def load_data(args, extra_article_features = False, dataset="demo"):
     test_user_news, test_news_user = create_graph(graph_history_icl_train, len_news, args)
     times.append(time.time() - old_time)
     print("times:", times)
+    print("lengths", len(train_data), len(eval_data), len(test_data), len(train_user_news), len(train_news_user), len(test_user_news), len(test_news_user), len(news_title), len(news_entity), len(news_group))
     return train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
