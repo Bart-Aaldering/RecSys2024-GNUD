@@ -13,3 +13,4 @@ dependencies:
     - polars
     - pandas
     - scikit-learn
+    - debugpy

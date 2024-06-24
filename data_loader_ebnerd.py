@@ -12,9 +12,6 @@ import json
 from train import train
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
 def catlist_to_idlist(df: pl.DataFrame, column_name: str):
     all_topics = set()
@@ -169,7 +166,7 @@ def load_data(args):
         for article, time in zip(json_history_train[user]['article_id_fixed'], json_history_train[user]['impression_time_fixed']):
             all_dates.append(time)
             
-    graph_cutoff = int(len(all) * (5/7))
+    graph_cutoff = int(len(all) * (5/6))
     
     graph_cutoff_date = all_dates[graph_cutoff]
     
