@@ -120,8 +120,6 @@ def load_data(args):
             article_entities.append(df_articles[column][i])
         all_entities.append(article_entities)
 
-    #all_entities = [list(df_articles['ner_clusters'][i]) + [df_articles['premium'][i]] + [df_articles['article_type'][i]] for i in range(len(df_articles))]
-    
     # Count amount of NER groups
     all = set()
     for group_list in df_articles['entity_groups']: 
@@ -139,9 +137,6 @@ def load_data(args):
             article_groups.append(next_group_number)
             next_group_number += 1
         all_groups.append(article_groups)
-
-    #all_groups = [list(df_articles['entity_groups'][i]) + [n_ner_groups + 1] + [n_ner_groups + 2] for i in range(len(df_articles))]
-
 
     # Mapping article ids to indices in article data
     art_id_to_idx = {}
