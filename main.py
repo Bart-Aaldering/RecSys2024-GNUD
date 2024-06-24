@@ -3,7 +3,6 @@ import numpy as np
 import time
 from data_loader_ebnerd import load_data
 from train import train
-import os
 
 import tensorflow as tf
 print(tf.config.list_physical_devices('GPU'))
@@ -19,7 +18,7 @@ def set_parse_arguments(ncaps=7, routit=7, n_iter=2):
    parser.add_argument('--dataset', type=str, default='ten_week', help='which dataset to use')
    parser.add_argument('--session_len', type=int, default=10, help='the max length of session')
    parser.add_argument('--aggregator', type=str, default='neighbor', help='which aggregator to use')
-   parser.add_argument('--n_epochs', type=int, default=5, help='the number of epochs')
+   parser.add_argument('--n_epochs', type=int, default=3, help='the number of epochs')
    parser.add_argument('--user_dim', type=int, default=128, help='dimension of user and entity embeddings')
    parser.add_argument('--cnn_out_size', type=int, default=128, help='dimension of cnn output')
    parser.add_argument('--n_iter', type=int, default=n_iter, help='number of iterations when computing entity representation')
@@ -52,8 +51,25 @@ list_ncaps = [5,7,9] # [3,5,7,9,11] k/preference factors maybe 3 and 11 later
 list_routit = [1,5,9] #
 list_n_iter = [1,2,3]
 
+eaf = False # extra article features
+# eaf = True # extra article features
+
+dataset = ["demo", "small", "large"][1]
+
+already_loaded = False
+# already_loaded = True
+
 args = set_parse_arguments()
-data = load_data(args)
+if already_loaded:
+   data = []
+   for idx in range(10):
+      data.append(np.load(f"Data/data_{str(eaf)}_{dataset}_{idx}.npy", allow_pickle=True))
+else:
+   data = load_data(args, extra_article_features=eaf, dataset=dataset)
+
+   for idx, dat in enumerate(data):
+      np.save(f"Data/data_{str(eaf)}_{dataset}_{idx}", dat)
+
 
 # for ncaps in list_ncaps:
 #    args = set_parse_arguments(ncaps=ncaps)

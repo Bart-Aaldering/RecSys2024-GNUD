@@ -29,7 +29,6 @@ def train(args, data, show_loss):
         saver = tf.compat.v1.train.Saver()
         file = open("local-" + "balance" + str(args.balance) + ".txt", "a")
         global_step = 0
-        # f1_counter = 0
         for step in range(args.n_epochs):
             np.random.shuffle(train_data)
             start = 0
@@ -97,10 +96,6 @@ def train(args, data, show_loss):
             file.write("\n-----------\n"+str(step) + "\n" + str(train_auc)+ " " + str(train_f1)+ " " + str(eval_auc)+ " "+str(eval_f1) + " " + str(test_auc)+ " " + str(test_f1) + "\n")
             
             if test_f1 < train_f1:
-            #     f1_counter += 1
-            # else:
-            #     f1_counter = 0
-            # if f1_counter == 2:
                 break
         file.close()
 
