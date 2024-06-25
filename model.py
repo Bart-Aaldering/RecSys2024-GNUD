@@ -5,9 +5,7 @@ from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator, Rou
 tf.compat.v1.disable_eager_execution()
 
 class Model(object):
-    def __init__(self, args, news_title, news_entity, news_group, n_user, n_news):
-
-        n_word = 279215
+    def __init__(self, args, news_title, news_entity, news_group, n_user, n_news, n_word):
         self.params = []
         self.use_group = args.use_group
         self.n_filters = args.n_filters
@@ -42,9 +40,9 @@ class Model(object):
                                                initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1))
         self.params.append(self.group_embedding)
         self.user_emb_matrix = tf.compat.v1.get_variable(
-            shape=[n_user + 1, self.user_dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='user_emb_matrix')
+            shape=[n_user, self.user_dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='user_emb_matrix')
         self.word_emb_matrix = tf.compat.v1.get_variable(
-            shape=[n_word + 1, 50], initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
+            shape=[n_word, 50], initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
         self.params.append(self.user_emb_matrix)
         self.params.append(self.word_emb_matrix)
 

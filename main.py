@@ -47,17 +47,17 @@ show_loss = True
 show_time = True
 
 t = time.time()
-list_ncaps = [5,7,9] # [3,5,7,9,11] k/preference factors maybe 3 and 11 later
+list_ncaps = [5,9] # [3,5,7,9,11] k/preference factors maybe 3 and 11 later
 list_routit = [1,5,9] #
-list_n_iter = [1,2,3]
+list_n_iter = [1,3]
 
 eaf = False # extra article features
 # eaf = True # extra article features
 
-dataset = ["demo", "small", "large"][1]
-
-already_loaded = False
-# already_loaded = True
+dataset = ["demo", "small", "large"][0]
+n_word = [20697, None, None][0]
+# already_loaded = False
+already_loaded = True
 
 args = set_parse_arguments()
 if already_loaded:
@@ -66,24 +66,28 @@ if already_loaded:
       data.append(np.load(f"Data/data_{str(eaf)}_{dataset}_{idx}.npy", allow_pickle=True))
 else:
    data = load_data(args, extra_article_features=eaf, dataset=dataset)
-
+   n_word = data[-1]
+   print(f"n_word: {n_word}")
+   data = data[:-1]
    for idx, dat in enumerate(data):
       np.save(f"Data/data_{str(eaf)}_{dataset}_{idx}", dat)
 
 
 # for ncaps in list_ncaps:
 #    args = set_parse_arguments(ncaps=ncaps)
-#    train(args, data, show_loss)
+#    train(args, data, show_loss, n_word)
 
 # for routit in list_routit:
 #    args = set_parse_arguments(routit=routit)
-#    train(args, data, show_loss)
+#    train(args, data, show_loss, n_word)
 
-# for n_iter in list_n_iter:
-#    args = set_parse_arguments(n_iter=n_iter)
-#    train(args, data, show_loss)
+# for n_iter in list_n_iter[1:]:
+   # print(f"n_iter: {n_iter}")
+   # tf.compat.v1.reset_default_graph()
+   # args = set_parse_arguments(n_iter=n_iter)
+   # train(args, data, show_loss, n_word)
 
-train(args, data, show_loss)
+train(args, data, show_loss, n_word)
 
 if show_time:
    print('time used: %d s' % (time.time() - t))

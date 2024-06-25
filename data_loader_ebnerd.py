@@ -32,7 +32,7 @@ def create_data(json_history, len_news):
             continue
         data.append([user, json_history[user]['article_id_fixed'][-1], None, 1])
         read_news = [x for x in json_history[user]['article_id_fixed']]
-        negative = random.sample(sorted(set(range(1, len_news + 1)) - set(read_news)), 1)[0] # Can't sample set, had to change this
+        negative = random.sample(sorted(set(range(len_news)) - set(read_news)), 1)[0] # Can't sample set, had to change this
         data.append([user, negative, None, 0])
     return data
 
@@ -114,7 +114,10 @@ def load_data(args, extra_article_features = False, dataset="demo"):
     # convert categories to integers
     for column in [title_column, ner_type_column]:
         df_articles, length = catlist_to_idlist(df_articles, column)
-    n_ner_groups = length
+        if column == title_column:
+            n_word = length
+        else:
+            n_ner_groups = length
     idx_offset = 0
     for column in nested_entity_columns:
         df_articles, length = catlist_to_idlist(df_articles, column, idx_offset)
@@ -265,4 +268,4 @@ def load_data(args, extra_article_features = False, dataset="demo"):
     times.append(time.time() - old_time)
     print("times:", times)
     print("lengths", len(train_data), len(eval_data), len(test_data), len(train_user_news), len(train_news_user), len(test_user_news), len(test_news_user), len(news_title), len(news_entity), len(news_group))
-    return train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group
+    return train_data, eval_data, test_data, train_user_news, train_news_user, test_user_news, test_news_user, news_title, news_entity, news_group, n_word

@@ -72,7 +72,7 @@ def load_new_data(args):
 
 def train_random_neighbor(args, train_user_news, train_news_user, news_len):
     user_news = np.zeros([len(train_user_news),args.news_neighbor], dtype=np.int32)
-    for i in range(1, len(train_user_news)):
+    for i in range(len(train_user_news)):
         n_neighbors = len(train_user_news[i])
         if n_neighbors >= args.news_neighbor:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor, replace=False)  #不放回
@@ -94,7 +94,7 @@ def train_random_neighbor(args, train_user_news, train_news_user, news_len):
 
 def test_random_neighbor(args, test_user_news, test_news_user, news_len):
     user_news = np.zeros([len(test_user_news),args.news_neighbor], dtype=np.int32)
-    for i in range(1, len(test_user_news)):
+    for i in range(len(test_user_news)):
         n_neighbors = len(test_user_news[i])
         if n_neighbors >= args.news_neighbor:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor, replace=False)
@@ -103,7 +103,7 @@ def test_random_neighbor(args, test_user_news, test_news_user, news_len):
         user_news[i] = np.array([test_user_news[i][k] for k in sampled_indices])
 
     news_user = np.zeros([news_len, args.user_neighbor], dtype=np.int32)
-    for i in range(1, len(test_news_user)):
+    for i in range(len(test_news_user)):
         n_neighbors = len(test_news_user[i])
         if n_neighbors >= args.user_neighbor:
             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor, replace=False)
@@ -113,97 +113,97 @@ def test_random_neighbor(args, test_user_news, test_news_user, news_len):
 
     return user_news, news_user
 
-def load_events(news, args):
-    with open(USER_NEWS_FILE, 'r') as file:
-        users = json.load(file)
-    len_news = len(news)
-    t_user_news = defaultdict(list)
-    t_news_user = defaultdict(list)
-    user_news = np.zeros([1+len(users), args.news_neighbor], dtype=np.int32)
-    news_user = np.zeros([1+len_news, args.user_neighbor], dtype=np.int32)
-    data = []
-    for user in users:
-        for i in range(len(users[user]) - 1):
-            t_user_news[int(user)].append(users[user][i]['id'])
-            t_news_user[users[user][i]['id']].append(int(user))
+# def load_events(news, args):
+#     with open(USER_NEWS_FILE, 'r') as file:
+#         users = json.load(file)
+#     len_news = len(news)
+#     t_user_news = defaultdict(list)
+#     t_news_user = defaultdict(list)
+#     user_news = np.zeros([len(users), args.news_neighbor], dtype=np.int32)
+#     news_user = np.zeros([len_news, args.user_neighbor], dtype=np.int32)
+#     data = []
+#     for user in users:
+#         for i in range(len(users[user]) - 1):
+#             t_user_news[int(user)].append(users[user][i]['id'])
+#             t_news_user[users[user][i]['id']].append(int(user))
 
-        # sample news neighbors of user
-        n_neighbors = len(t_user_news[int(user)])
-        if n_neighbors >= args.news_neighbor:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
-                                               replace=False)
-        else:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
-                                               replace=True)
-        user_news[int(user)] = np.array([t_user_news[int(user)][i] for i in sampled_indices])
-
-
-
-        t1 = trans_time(users[user][-1]['time'], users[user][-1]['publishtime'])
-        data.append([user, users[user][-1]['id'], t1, 1])
-
-        read_news = [x['id'] for x in users[user]]
-        negtive = str(random.sample(set(range(1, len_news + 1)) - set(read_news), 1)[0])
-        t2 = trans_time(news[negtive]['time'], news[negtive]['publishtime'])
-        data.append([user, negtive, t2, 0])
-    # sample user neighbors of news
-    for i in range(1,len(t_news_user)+1):
-        n_neighbors = len(t_news_user[i])
-        if n_neighbors >= args.user_neighbor:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
-                                               replace=False)
-        else:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
-                                               replace=True)
-        news_user[i] = np.array([t_news_user[i][j] for j in sampled_indices])
-
-    # dataset split
-    train_data, eval_data, test_data = dataset_split(np.array(data), args)
-
-    return train_data, eval_data, test_data, user_news, news_user
+#         # sample news neighbors of user
+#         n_neighbors = len(t_user_news[int(user)])
+#         if n_neighbors >= args.news_neighbor:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
+#                                                replace=False)
+#         else:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
+#                                                replace=True)
+#         user_news[int(user)] = np.array([t_user_news[int(user)][i] for i in sampled_indices])
 
 
-def load_news(args):
-    with open(NEWS_ENTITY_FILE,'r') as file:
-        news = json.load(file)
-    news_title = []
-    n_entity = 69473
-    t_entity_news = defaultdict(list)
-    entity_news = np.zeros([1 + n_entity, args.news_neighbor], dtype=np.int64)
-    news_entity = np.zeros([1 + len(news), args.entity_neighbor], dtype=np.int64)
-    for i in range(1, len(news) + 1):
 
-        if len(news[str(i)]['title']) <= args.title_len:
-            news_title.append(news[str(i)]['title'].extend([0]*(args.title_len-len(news[str(i)]['title']))))
-        else:
-            news_title.append(news[str(i)]['title'][:args.title_len])
-        # sample entity neighbors of news
-        n_neighbors = len(news[str(i)]['entity'])
-        if n_neighbors >= args.entity_neighbor:
+#         t1 = trans_time(users[user][-1]['time'], users[user][-1]['publishtime'])
+#         data.append([user, users[user][-1]['id'], t1, 1])
 
-            sampled_indices = np.random.choice(list(range(args.entity_neighbor)), size=args.entity_neighbor,
-                                               replace=False)
-        else:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.entity_neighbor,
-                                               replace=True)
-        news_entity[i] = np.array([news[str(i)]['entity'][j] for j in sampled_indices])
+#         read_news = [x['id'] for x in users[user]]
+#         negtive = str(random.sample(set(range(1, len_news + 1)) - set(read_news), 1)[0])
+#         t2 = trans_time(news[negtive]['time'], news[negtive]['publishtime'])
+#         data.append([user, negtive, t2, 0])
+#     # sample user neighbors of news
+#     for i in range(1,len(t_news_user)+1):
+#         n_neighbors = len(t_news_user[i])
+#         if n_neighbors >= args.user_neighbor:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
+#                                                replace=False)
+#         else:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.user_neighbor,
+#                                                replace=True)
+#         news_user[i] = np.array([t_news_user[i][j] for j in sampled_indices])
 
-        for e in news[str(i)]['entity']:
-            t_entity_news[e].append(i)
+#     # dataset split
+#     train_data, eval_data, test_data = dataset_split(np.array(data), args)
 
-    # sample news neighbors of entity
-    for j in range(1, len(t_entity_news) + 1):
-        n_neighbors = len(t_entity_news[j])
-        if n_neighbors >= args.news_neighbor:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
-                                               replace=False)
-        else:
-            sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
-                                               replace=True)
-        entity_news[j] = np.array([t_entity_news[j][k] for k in sampled_indices])
-    news_title = np.array(news_title)
+#     return train_data, eval_data, test_data, user_news, news_user
 
-    return news, news_title, news_entity, entity_news
+
+# def load_news(args):
+#     with open(NEWS_ENTITY_FILE,'r') as file:
+#         news = json.load(file)
+#     news_title = []
+#     n_entity = 69473
+#     t_entity_news = defaultdict(list)
+#     entity_news = np.zeros([1 + n_entity, args.news_neighbor], dtype=np.int64)
+#     news_entity = np.zeros([1 + len(news), args.entity_neighbor], dtype=np.int64)
+#     for i in range(1, len(news) + 1):
+
+#         if len(news[str(i)]['title']) <= args.title_len:
+#             news_title.append(news[str(i)]['title'].extend([0]*(args.title_len-len(news[str(i)]['title']))))
+#         else:
+#             news_title.append(news[str(i)]['title'][:args.title_len])
+#         # sample entity neighbors of news
+#         n_neighbors = len(news[str(i)]['entity'])
+#         if n_neighbors >= args.entity_neighbor:
+
+#             sampled_indices = np.random.choice(list(range(args.entity_neighbor)), size=args.entity_neighbor,
+#                                                replace=False)
+#         else:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.entity_neighbor,
+#                                                replace=True)
+#         news_entity[i] = np.array([news[str(i)]['entity'][j] for j in sampled_indices])
+
+#         for e in news[str(i)]['entity']:
+#             t_entity_news[e].append(i)
+
+#     # sample news neighbors of entity
+#     for j in range(1, len(t_entity_news) + 1):
+#         n_neighbors = len(t_entity_news[j])
+#         if n_neighbors >= args.news_neighbor:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
+#                                                replace=False)
+#         else:
+#             sampled_indices = np.random.choice(list(range(n_neighbors)), size=args.news_neighbor,
+#                                                replace=True)
+#         entity_news[j] = np.array([t_entity_news[j][k] for k in sampled_indices])
+#     news_title = np.array(news_title)
+
+#     return news, news_title, news_entity, entity_news
 
 
 def load_entity():

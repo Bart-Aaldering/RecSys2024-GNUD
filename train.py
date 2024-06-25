@@ -6,7 +6,7 @@ from model import Model
 from data_loader import train_random_neighbor, test_random_neighbor
 
 
-def train(args, data, show_loss):
+def train(args, data, show_loss, n_word):
     train_data, eval_data, test_data = data[0], data[1], data[2]
     train_user_news, train_news_user, test_user_news, test_news_user = data[3], data[4], data[5], data[6]
     news_title, news_entity, news_group = data[7], data[8], data[9]
@@ -15,7 +15,7 @@ def train(args, data, show_loss):
 
     print(len(train_user_news))
 
-    model = Model(args, news_title, news_entity, news_group, len(train_user_news), len(news_title))
+    model = Model(args, news_title, news_entity, news_group, len(train_user_news), len(news_title), n_word)
 
     gpu_options = tf.compat.v1.GPUOptions()
     config = tf.compat.v1.ConfigProto(gpu_options=gpu_options)
@@ -28,6 +28,8 @@ def train(args, data, show_loss):
         # saver = tf.compat.v1.train.Saver(write_version=tf.compat.v1.train.SaverDef.V2)
         saver = tf.compat.v1.train.Saver()
         file = open("local-" + "balance" + str(args.balance) + ".txt", "a")
+        file.write("ncaps: " + str(args.ncaps) + " routit: " + str(args.routit) + " n_iter: " + str(args.n_iter) + "\n")
+        
         global_step = 0
         for step in range(args.n_epochs):
             np.random.shuffle(train_data)
