@@ -39,9 +39,9 @@ class Model(object):
                                                initializer=tf.truncated_normal_initializer(stddev=0.1))
         self.params.append(self.group_embedding)
         self.user_emb_matrix = tf.get_variable(
-            shape=[n_user + 1, self.user_dim], initializer=tf.contrib.layers.xavier_initializer(), name='user_emb_matrix')
+            shape=[n_user, self.user_dim], initializer=tf.contrib.layers.xavier_initializer(), name='user_emb_matrix')
         self.word_emb_matrix = tf.get_variable(
-            shape=[n_word + 1, 50], initializer=tf.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
+            shape=[n_word, 50], initializer=tf.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
         self.params.append(self.user_emb_matrix)
         self.params.append(self.word_emb_matrix)
 

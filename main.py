@@ -5,7 +5,7 @@ from data_loader_ebnerd import load_data
 from train import train
 
 import tensorflow as tf
-print(tf.config.list_physical_devices('GPU'))
+# print(tf.config.list_physical_devices('GPU'))
 
 def set_parse_arguments(ncaps=7, routit=7, n_iter=2):
    parser = argparse.ArgumentParser()
