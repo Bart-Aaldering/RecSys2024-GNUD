@@ -48,3 +48,7 @@ ncaps: 7 routit: 7 n_iter: 2
 -----------
 0
 0.871997951426593 0.8538520976678783 0.3439110824742268 0.08379966933398528 0.3486227448453608 0.08378919116799227
+ncaps: 7 routit: 7 n_iter: 2
+ncaps: 7 routit: 7 n_iter: 2
+ncaps: 7 routit: 7 n_iter: 2
+ncaps: 7 routit: 7 n_iter: 2
