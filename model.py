@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 from sklearn.metrics import f1_score, roc_auc_score, precision_score, recall_score
 from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator, RoutingLayer
-tf.compat.v1.disable_eager_execution()
 
 class Model(object):
     def __init__(self, args, news_title, news_entity, news_group, n_user, n_news, n_word):
@@ -36,13 +35,13 @@ class Model(object):
         self.n_user = n_user
         self.n_news = n_news
 
-        self.group_embedding = tf.compat.v1.get_variable(name="group_embed", shape=[12, 50], dtype=tf.float32,
-                                               initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1))
+        self.group_embedding = tf.get_variable(name="group_embed", shape=[12, 50], dtype=tf.float32,
+                                               initializer=tf.truncated_normal_initializer(stddev=0.1))
         self.params.append(self.group_embedding)
-        self.user_emb_matrix = tf.compat.v1.get_variable(
-            shape=[n_user, self.user_dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='user_emb_matrix')
-        self.word_emb_matrix = tf.compat.v1.get_variable(
-            shape=[n_word, 50], initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
+        self.user_emb_matrix = tf.get_variable(
+            shape=[n_user + 1, self.user_dim], initializer=tf.contrib.layers.xavier_initializer(), name='user_emb_matrix')
+        self.word_emb_matrix = tf.get_variable(
+            shape=[n_word + 1, 50], initializer=tf.truncated_normal_initializer(stddev=0.1), name='word_emb_matrix')
         self.params.append(self.user_emb_matrix)
         self.params.append(self.word_emb_matrix)
 
@@ -61,14 +60,14 @@ class Model(object):
         self.build_train()
 
     def build_inputs(self):
-        self.dropout_rate = tf.compat.v1.placeholder(tf.float32)
+        self.dropout_rate = tf.placeholder(tf.float32)
 
-        self.user_indices = tf.compat.v1.placeholder(dtype=tf.int32, shape=[self.batch_size], name='user_indices')
-        self.news_indices = tf.compat.v1.placeholder(dtype=tf.int32, shape=[self.batch_size], name='news_indices')  # 一个batch大小
-        self.labels = tf.compat.v1.placeholder(dtype=tf.float32, shape=[self.batch_size], name='labels')
+        self.user_indices = tf.placeholder(dtype=tf.int32, shape=[self.batch_size], name='user_indices')
+        self.news_indices = tf.placeholder(dtype=tf.int32, shape=[self.batch_size], name='news_indices')  # 一个batch大小
+        self.labels = tf.placeholder(dtype=tf.float32, shape=[self.batch_size], name='labels')
 
-        self.user_news = tf.compat.v1.placeholder(dtype=tf.int32, shape=[self.n_user, self.news_neighbor], name='user_news')
-        self.news_user = tf.compat.v1.placeholder(dtype=tf.int32, shape=[self.n_news, self.user_neighbor], name='user_news')
+        self.user_news = tf.placeholder(dtype=tf.int32, shape=[self.n_user, self.news_neighbor], name='user_news')
+        self.news_user = tf.placeholder(dtype=tf.int32, shape=[self.n_news, self.user_neighbor], name='user_news')
 
     def build_model(self):
 
@@ -102,15 +101,15 @@ class Model(object):
         self.l2_loss = self.l2_loss + tf.nn.l2_loss(self.user_weights) + tf.nn.l2_loss(self.item_weights)
         infer_loss, ret_w = self.infer_loss(self.user_embeddings, self.news_embeddings)
         self.loss = (1-self.balance) * self.base_loss + self.balance * infer_loss + self.l2_weight * self.l2_loss
-        self.optimizer = tf.compat.v1.train.AdamOptimizer(self.lr).minimize(self.loss)
+        self.optimizer = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
 
 
     def simple_dot_net(self, x, y):
         caps = self.ncaps - (self.n_iter - 1) * self.dcaps
-        with tf.compat.v1.variable_scope("last_map"):
-            last_w = tf.compat.v1.get_variable(shape=[caps * self.nhidden, caps * self.nhidden],
-                                     initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='weights')
-            last_b = tf.compat.v1.get_variable(shape=[caps * self.nhidden], initializer=tf.zeros_initializer(), name='bias')
+        with tf.variable_scope("last_map"):
+            last_w = tf.get_variable(shape=[caps * self.nhidden, caps * self.nhidden],
+                                     initializer=tf.contrib.layers.xavier_initializer(), name='weights')
+            last_b = tf.get_variable(shape=[caps * self.nhidden], initializer=tf.zeros_initializer(), name='bias')
 
             x_map = tf.matmul(tf.reshape(x[-1], [self.batch_size, -1]), last_w) + last_b
             y_map = tf.matmul(tf.reshape(y[-1], [self.batch_size, -1]), last_w) + last_b
@@ -121,10 +120,10 @@ class Model(object):
 
     def infer_loss(self, x, y):
         caps = self.ncaps - (self.n_iter - 1) * self.dcaps
-        with tf.compat.v1.variable_scope("ret_-2"):
-            ret_uw = tf.compat.v1.get_variable(shape=[self.nhidden, caps],
-                                         initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='weights')
-            ret_ub = tf.compat.v1.get_variable(shape=[caps], initializer=tf.zeros_initializer(), name='bias')
+        with tf.variable_scope("ret_-2"):
+            ret_uw = tf.get_variable(shape=[self.nhidden, caps],
+                                         initializer=tf.contrib.layers.xavier_initializer(), name='weights')
+            ret_ub = tf.get_variable(shape=[caps], initializer=tf.zeros_initializer(), name='bias')
         x_class = tf.matmul(tf.reshape(x[-1], [-1, self.nhidden]), ret_uw) + ret_ub
         y_class = tf.matmul(tf.reshape(y[-1], [-1, self.nhidden]), ret_uw) + ret_ub
         label = tf.tile(tf.eye(caps), [self.batch_size, 1])
@@ -144,14 +143,14 @@ class Model(object):
         n = self.news_neighbor
         u = self.user_neighbor
 
-        with tf.compat.v1.variable_scope("user_Map"):
+        with tf.variable_scope("user_Map"):
             stdv = 1. / tf.sqrt(tf.cast(self.dim, tf.float32))
-            self.user_weights = tf.compat.v1.get_variable(shape=[self.user_dim, self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
-            self.user_bias = tf.compat.v1.get_variable(shape=[self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
-        with tf.compat.v1.variable_scope("item_Map"):
+            self.user_weights = tf.get_variable(shape=[self.user_dim, self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
+            self.user_bias = tf.get_variable(shape=[self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
+        with tf.variable_scope("item_Map"):
             stdv = 1. / tf.sqrt(tf.cast(self.dim, tf.float32))
-            self.item_weights = tf.compat.v1.get_variable(shape=[self.cnn_out_size, self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
-            self.item_bias = tf.compat.v1.get_variable(shape=[self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
+            self.item_weights = tf.get_variable(shape=[self.cnn_out_size, self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
+            self.item_bias = tf.get_variable(shape=[self.dim], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
 
         news_hop_vectors = tf.reshape(self.convolution(news[0]), [-1, self.cnn_out_size])
         news_hop_vectors = tf.nn.relu(tf.matmul(news_hop_vectors, self.item_weights) + self.item_bias)
@@ -321,11 +320,11 @@ class Model(object):
         item_group_embed = tf.expand_dims(
             tf.reshape(tf.concat((item_embed, group_embed), 2), [-1, 80, 50]), -1)
 
-        with tf.compat.v1.variable_scope("conv-maxpool-item-group", initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1),
-                               reuse=tf.compat.v1.AUTO_REUSE):
-            W_item = tf.compat.v1.get_variable(name='W', shape=self.filter_shape_item, dtype=tf.float32,
-                                     initializer=tf.compat.v1.keras.initializers.glorot_normal())
-            b_item = tf.compat.v1.get_variable(name='b', shape=[8], dtype=tf.float32)
+        with tf.variable_scope("conv-maxpool-item-group", initializer=tf.truncated_normal_initializer(stddev=0.1),
+                               reuse=tf.AUTO_REUSE):
+            W_item = tf.get_variable(name='W', shape=self.filter_shape_item, dtype=tf.float32,
+                                     initializer=tf.contrib.layers.xavier_initializer(uniform=False))
+            b_item = tf.get_variable(name='b', shape=[8], dtype=tf.float32)
             if W_item not in self.params:
                 self.params.append(W_item)
             if b_item not in self.params:
@@ -345,11 +344,11 @@ class Model(object):
                 name="pool")
             self.pool_item = tf.reshape(pooled_item, [self.batch_size, -1, self.input_size_item])
 
-        with tf.compat.v1.variable_scope("conv-maxpool-title", initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.1),
-                               reuse=tf.compat.v1.AUTO_REUSE):
-            W_title = tf.compat.v1.get_variable(name='W', shape=self.filter_shape_title, dtype=tf.float32,
-                                      initializer=tf.compat.v1.keras.initializers.glorot_normal())
-            b_title = tf.compat.v1.get_variable(name='b', shape=[8], dtype=tf.float32)
+        with tf.variable_scope("conv-maxpool-title", initializer=tf.truncated_normal_initializer(stddev=0.1),
+                               reuse=tf.AUTO_REUSE):
+            W_title = tf.get_variable(name='W', shape=self.filter_shape_title, dtype=tf.float32,
+                                      initializer=tf.contrib.layers.xavier_initializer(uniform=False))
+            b_title = tf.get_variable(name='b', shape=[8], dtype=tf.float32)
             if W_title not in self.params:
                 self.params.append(W_title)
             if b_title not in self.params:
@@ -370,7 +369,7 @@ class Model(object):
             pool_title = tf.reshape(pooled_title, [self.batch_size, -1, self.input_size_title])
 
         pooled = tf.concat((self.pool_item, pool_title), -1)
-        pool = tf.compat.v1.layers.dense(pooled, self.cnn_out_size, activation=tf.nn.relu)
+        pool = tf.layers.dense(pooled, self.cnn_out_size, activation=tf.nn.relu)
 
         return pool
 

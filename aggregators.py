@@ -56,10 +56,10 @@ class SumAggregator(Aggregator):
     def __init__(self, batch_size, dim, dropout=0., act=tf.nn.relu, name=None):
         super(SumAggregator, self).__init__(batch_size, dim, dropout, act, name)
 
-        with tf.compat.v1.variable_scope(self.name):
-            self.weights = tf.compat.v1.get_variable(
-                shape=[self.dim, self.dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='weights')
-            self.bias = tf.compat.v1.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
+        with tf.variable_scope(self.name):
+            self.weights = tf.get_variable(
+                shape=[self.dim, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
+            self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
     def _call(self, self_vectors, neighbor_vectors):
         # [batch_size, -1, dim]
@@ -80,10 +80,10 @@ class ConcatAggregator(Aggregator):
     def __init__(self, batch_size, dim, dropout=0., act=tf.nn.relu, name=None):
         super(ConcatAggregator, self).__init__(batch_size, dim, dropout, act, name)
 
-        with tf.compat.v1.variable_scope(self.name):
-            self.weights = tf.compat.v1.get_variable(
-                shape=[self.dim * 2, self.dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='weights')
-            self.bias = tf.compat.v1.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
+        with tf.variable_scope(self.name):
+            self.weights = tf.get_variable(
+                shape=[self.dim * 2, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
+            self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
     def _call(self, self_vectors, neighbor_vectors):
         # [batch_size, -1, dim]
@@ -109,10 +109,10 @@ class NeighborAggregator(Aggregator):
     def __init__(self, batch_size, dim, dropout=0., act=tf.nn.relu, name=None):
         super(NeighborAggregator, self).__init__(batch_size, dim, dropout, act, name)
 
-        with tf.compat.v1.variable_scope(self.name):
-            self.weights = tf.compat.v1.get_variable(
-                shape=[self.dim, self.dim], initializer=tf.compat.v1.keras.initializers.glorot_uniform(), name='weights')
-            self.bias = tf.compat.v1.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
+        with tf.variable_scope(self.name):
+            self.weights = tf.get_variable(
+                shape=[self.dim, self.dim], initializer=tf.contrib.layers.xavier_initializer(), name='weights')
+            self.bias = tf.get_variable(shape=[self.dim], initializer=tf.zeros_initializer(), name='bias')
 
     def _call(self, self_vectors, neighbor_vectors):
         # [batch_size, -1, dim]
@@ -151,19 +151,18 @@ class RoutingLayer():
         if inp_caps is not None:
             self.inp_caps = inp_caps
             if layers == 1:
-                with tf.compat.v1.variable_scope('Linear-1'):
+                with tf.variable_scope('Linear-1'):
                     stdv = 1. / tf.sqrt(tf.cast(self.d, tf.float32))
-                    self.w1 = tf.compat.v1.get_variable(shape=[inp_caps * cap_sz,  cap_sz * out_caps], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
-                    self.b1 = tf.compat.v1.get_variable(shape=[cap_sz * out_caps], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
+                    self.w1 = tf.get_variable(shape=[inp_caps * cap_sz,  cap_sz * out_caps], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='weights')
+                    self.b1 = tf.get_variable(shape=[cap_sz * out_caps], initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv), name='bias')
             if layers == 2:
-                with tf.compat.v1.variable_scope('Linear-2'):
+                with tf.variable_scope('Linear-2'):
                     stdv = 1. / tf.sqrt(tf.cast(self.d, tf.float32))
-                    self.w2 = tf.compat.v1.get_variable(shape=[inp_caps * cap_sz, cap_sz * out_caps],initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv),name='weights')
-                    self.b2 = tf.compat.v1.get_variable(shape=[cap_sz * out_caps],initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv),name='bias')
+                    self.w2 = tf.get_variable(shape=[inp_caps * cap_sz, cap_sz * out_caps],initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv),name='weights')
+                    self.b2 = tf.get_variable(shape=[cap_sz * out_caps],initializer=tf.random_uniform_initializer(minval=-stdv, maxval=stdv),name='bias')
 
     def drop_out(self, x):
-        # return tf.nn.dropout(x, rate=self.drop)
-        return tf.compat.v1.nn.dropout(x, keep_prob=1-self.drop)
+        return tf.nn.dropout(x, keep_prob=1-self.drop)
 
     def rout(self, self_vectors, neighbor_vectors, max_iter):
 
