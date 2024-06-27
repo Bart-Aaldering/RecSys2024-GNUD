@@ -89,5 +89,31 @@ else:
 
 train(args, data, show_loss, n_word)
 
+
+# from sklearn.ensemble import RandomForestRegressor
+# from sklearn.model_selection import RandomizedSearchCV
+# from sklearn.metrics import f1_score, roc_auc_score
+
+# train_data = data[0]
+# eval_data = data[1]
+
+# param_dist = {
+#    'n_estimators': [50, 100, 200, 400],
+#    'max_depth': [10, 40, 70, 100, None],
+#    'min_samples_split': [2, 5, 10],
+#    'min_samples_leaf': [1, 2, 4],
+#    'bootstrap': [True, False]
+# }
+# model = RandomForestRegressor()
+# rsh = RandomizedSearchCV(model, param_dist, random_state=42,n_jobs=1, verbose=2)
+# rsh.fit(train_data[:, :2], train_data[:, 3])
+
+# model2 = RandomForestRegressor()
+# model2.fit(train_data[:, :2], train_data[:, 3])
+# pred = model2.predict(eval_data[:, :2])
+
+# print("f1: ", f1_score(eval_data[:, 3].astype(int), (pred > 0.5).astype(int)))
+# print("roc_auc: ", roc_auc_score(eval_data[:, 3].astype(float), pred.astype(float)))
+
 if show_time:
    print('time used: %d s' % (time.time() - t))
