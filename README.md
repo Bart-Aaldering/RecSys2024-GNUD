@@ -1,8 +1,2 @@
-This is a WIP reproduction of the ACL 2020 paper “Graph Neural News Recommendation with Unsupervised Preference Disentanglement”, made for the RecSys Challenge 2024.
-
-conda create -n python=3.7
-pip install "tensorflow>=1.15,<2.0"
-pip install polars
-pip install pandas
-pip install protobuf==3.20.*
-pip install scikit-learn
+This is a reproduction of the ACL 2020 paper “Graph Neural News Recommendation with Unsupervised Preference Disentanglement”, made for the RecSys Challenge 2024.
+We have forked the authors' code and tried to use it. Because we use a different dataset, we adapted the dataloader and made a lot of changes, the new dataloader can be found in `data_loader_ebnerd.py`. We also wrote a new `main.py`. Bram, can you add what other changes we made?
