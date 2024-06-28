@@ -8,6 +8,9 @@ import tensorflow as tf
 print(tf.config.list_physical_devices('GPU'))
 
 def set_parse_arguments(ncaps=7, routit=7, n_iter=2):
+   
+   
+   ######## DATA PARSING FROM ORIGINAL AUTHORS ########
    parser = argparse.ArgumentParser()
 
    parser.add_argument("--news_neighbor", type=int, default=30, help="the number of neighbors to be sampled")
@@ -90,7 +93,7 @@ else:
 
 train(args, data, show_loss, n_word)
 
-
+###########  OUR BENCHMARK MODELS ##########
 # from sklearn.ensemble import RandomForestRegressor
 # from sklearn import svm
 # from sklearn.model_selection import RandomizedSearchCV
