@@ -51,7 +51,7 @@ def train(args, data, show_loss, n_word):
                                                                                 0.5, user_news, news_user))
                 start += args.batch_size
 
-                if start % (args.batch_size*50) == 0:
+                if start % (args.batch_size*100) == 0:
                     sam_test_user_news, sam_test_news_user = test_random_neighbor(args, test_user_news, test_news_user, len(news_title))
                     print(len(sam_test_news_user))
 

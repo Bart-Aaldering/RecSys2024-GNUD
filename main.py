@@ -54,8 +54,9 @@ list_n_iter = [1,3]
 eaf = False # extra article features
 # eaf = True # extra article features
 
-dataset = ["demo", "small", "large"][0]
-n_word = [20697, None, None][0]
+dataset_idx = 1
+dataset = ["demo", "small", "large"][dataset_idx]
+n_word = [20697, 35000, None][dataset_idx]
 # already_loaded = False
 already_loaded = True
 
@@ -91,12 +92,17 @@ train(args, data, show_loss, n_word)
 
 
 # from sklearn.ensemble import RandomForestRegressor
+# from sklearn import svm
 # from sklearn.model_selection import RandomizedSearchCV
 # from sklearn.metrics import f1_score, roc_auc_score
 
 # train_data = data[0]
 # eval_data = data[1]
+# # print(len(train_data), len(eval_data))
+# # 
+# unit_model = svm.SVR
 
+# unit_model = RandomForestRegressor
 # param_dist = {
 #    'n_estimators': [50, 100, 200, 400],
 #    'max_depth': [10, 40, 70, 100, None],
@@ -104,11 +110,14 @@ train(args, data, show_loss, n_word)
 #    'min_samples_leaf': [1, 2, 4],
 #    'bootstrap': [True, False]
 # }
-# model = RandomForestRegressor()
+# model = unit_model()
 # rsh = RandomizedSearchCV(model, param_dist, random_state=42,n_jobs=1, verbose=2)
 # rsh.fit(train_data[:, :2], train_data[:, 3])
 
-# model2 = RandomForestRegressor()
+# params = rsh.best_params_
+# params = {}
+
+# model2 = unit_model(**params)
 # model2.fit(train_data[:, :2], train_data[:, 3])
 # pred = model2.predict(eval_data[:, :2])
 
